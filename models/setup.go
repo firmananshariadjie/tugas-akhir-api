@@ -8,15 +8,17 @@ import (
 var DB *gorm.DB
 
 func ConnectDatabase() {
-	database, err := gorm.Open(mysql.Open("root:@tcp(localhost:3306)/go_restapi_gin"))
+	// database, err := gorm.Open(mysql.Open("root:@tcp(localhost:3306)/go_restapi_gin"))
+	database, err := gorm.Open(mysql.Open("root:@tcp(localhost:3306)/go_restapi_gin_test"))
 	if err != nil {
 		panic(err)
 	}
 	
-	// Lakukan migrasi otomatis untuk tabel Participant
-	database.AutoMigrate(&Participant{})
 	// Lakukan migrasi otomatis untuk tabel Event
 	database.AutoMigrate(&Event{})
+	// Lakukan migrasi otomatis untuk tabel Participant
+	database.AutoMigrate(&Participant{})
+	
 
 	DB = database
 }

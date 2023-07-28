@@ -9,7 +9,7 @@ var DB *gorm.DB
 
 func ConnectDatabase() {
 	// database, err := gorm.Open(mysql.Open("root:@tcp(localhost:3306)/go_restapi_gin"))
-	database, err := gorm.Open(mysql.Open("root:@tcp(localhost:3306)/go_restapi_gin_test"))
+	database, err := gorm.Open(mysql.Open("root:@tcp(localhost:3306)/go_restapi_gin_test?parseTime=true"))
 	if err != nil {
 		panic(err)
 	}

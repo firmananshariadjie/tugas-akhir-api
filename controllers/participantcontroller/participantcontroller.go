@@ -3,12 +3,13 @@ package participantcontroller
 import (
 	"encoding/json"
 	"net/http"
-	// "time"
+	"time"
 
 	"github.com/firmananshariadjie/tugas-akhir-api/models"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // Index mengambil daftar semua Participant acara dari database dan mengembalikannya dalam format JSON.
@@ -45,8 +46,20 @@ func Create(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
+	participant.Status = "Terdaftar"
+	participant.Unique_Code = uuid.New().String()
+	participant.CreatedAt = time.Now()
+	participant.RegisterDate = time.Now()
+	
 	models.DB.Create(&participant)
+
+	// Mengupdate kolom "participant_registered" di tabel "event"
+	// dengan menambahkan 1 pada nilai saat ini untuk event ID tertentu
+	eventID := participant.EventID
+	models.DB.Model(&models.Event{}).
+		Where("id = ?", eventID).
+		Update("participant_registered", models.DB.Raw("participant_registered + ?", 1))
+
 	c.JSON(http.StatusOK, gin.H{"participant": participant})
 }
 
@@ -71,6 +84,10 @@ func Update(c *gin.Context) {
 // Delete menghapus data Participant acara berdasarkan ID yang diberikan.
 func Delete(c *gin.Context) {
 	var participant models.Participant
+	eventID := participant.EventID
+	models.DB.Model(&models.Event{}).
+		Where("id = ?", eventID).
+		Update("participant_registered", models.DB.Raw("participant_registered - ?", 1))
 
 	var input struct {
 		Id json.Number
@@ -86,6 +103,7 @@ func Delete(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Tidak dapat menghapus Participant acara"})
 		return
 	}
+	
 
 	c.JSON(http.StatusOK, gin.H{"message": "Data berhasil dihapus"})
 }

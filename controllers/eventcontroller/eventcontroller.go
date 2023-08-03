@@ -3,6 +3,7 @@ package eventcontroller
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/firmananshariadjie/tugas-akhir-api/models"
 	"gorm.io/gorm"
@@ -13,12 +14,13 @@ import (
 // Index mengambil daftar semua Event dari database dan mengembalikannya dalam format JSON.
 func Index(c *gin.Context) {
 	var events []models.Event
-	models.DB.Find(&events)
+	models.DB.Preload("Participants").Find(&events)
 	c.JSON(http.StatusOK, gin.H{"events": events})
 }
 
 // Show mengambil satu data Event berdasarkan ID yang diberikan dan mengembalikannya dalam format JSON.
 func Show(c *gin.Context) {
+	// var events []models.Event
 	var event models.Event
 	id := c.Param("id")
 
@@ -32,7 +34,7 @@ func Show(c *gin.Context) {
 			return
 		}
 	}
-
+	models.DB.Preload("Participants").Find(&event)
 	c.JSON(http.StatusOK, gin.H{"event": event})
 }
 
@@ -44,6 +46,9 @@ func Create(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+
+	// Set kolom "created_at" dengan waktu saat ini
+    event.CreatedAt = time.Now()
 
 	models.DB.Create(&event)
 	c.JSON(http.StatusOK, gin.H{"event": event})
